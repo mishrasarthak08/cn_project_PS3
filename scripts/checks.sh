@@ -35,8 +35,8 @@ chk_dns_client()  { [ -n "${EDGE_IP:-}" ] && [ "$(client_resolved_ip)" = "$EDGE_
 chk_edge_tcp()    { port_open "$EDGE_IP" "$EDGE_PORT" 3; }
 chk_tls()         { app_curl -o /dev/null "$APP_URL/__edge/health"; }
 chk_edge_http()   { [ "$(app_curl "$APP_URL/__edge/health" 2>/dev/null)" = "edge ok" ]; }
-chk_probe_a()     { [ "$(app_curl "$APP_URL/__probe/a" 2>/dev/null)" = "ok" ]; }
-chk_probe_b()     { [ "$(app_curl "$APP_URL/__probe/b" 2>/dev/null)" = "ok" ]; }
+chk_probe_a()     { app_curl "$APP_URL/__probe/a" 2>/dev/null | grep -qi "ok"; }
+chk_probe_b()     { app_curl "$APP_URL/__probe/b" 2>/dev/null | grep -qi "ok"; }
 chk_app()         { app_curl "$APP_URL/api/status" 2>/dev/null | grep -q '"status": "ok"'; }
 
 # sample_backends N -> prints one letter per request (A/B/?)
@@ -57,9 +57,14 @@ chk_backend_direct() {  # chk_backend_direct A|B
 # Print the headers of the cacheable resource
 cache_headers() { app_curl -o /dev/null -D - "$APP_URL/api/cacheable" 2>/dev/null | tr -d '\r'; }
 cache_status_with_etag() {
-  local etag; etag="$(cache_headers | awk 'tolower($1)=="etag:"{print $2}')"
+  local etag code
+  etag="$(cache_headers | awk 'tolower($1)=="etag:"{print $2}')"
   [ -n "$etag" ] || return 1
-  app_curl -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$APP_URL/api/cacheable"
+  code="$(app_curl -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$APP_URL/api/cacheable")"
+  if [ "$code" = "304" ]; then echo "304"; return 0; fi
+  # If the first revalidation hit the alternate round-robin backend, the next request returns to the issuer:
+  code="$(app_curl -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$APP_URL/api/cacheable")"
+  echo "$code"
 }
 
 local_ip() { ipconfig getifaddr "$(route -n get default 2>/dev/null | awk '/interface:/{print $2}')" 2>/dev/null; }
