@@ -17,10 +17,10 @@ Fill in the real IP and MAC addresses collected from `scripts/macos-network-info
 
 | Node | Owner | Role | IP Address | Subnet Mask | MAC Address | Interface |
 |---|---|---|---|---|---|---|
-| **Mac 1** | Sarthak | DNS (dnsmasq) + Controller | `10.7.7.126` | `/19` (255.255.224.0) | _Mac 1 MAC_ | `en0` |
+| **Mac 1** | Sarthak | DNS (dnsmasq) + Controller | `10.7.7.126` | `/19` (255.255.224.0) | `92:82:a9:6f:7c:8f` | `en0` |
 | **Mac 2** | Preetish | Nginx Edge (TLS + Proxy + LB) | `10.7.11.189` | `/19` (255.255.224.0) | `2e:3e:87:1c:cc:ab` | `en0` |
-| **Mac 3** | Shitanshu | Backend A | `10.7.7.23` | `/19` (255.255.224.0) | _Mac 3 MAC_ | `en0` |
-| **Mac 4** | Shane | Backend B | `10.7.14.16` | `/19` (255.255.224.0) | _Mac 4 MAC_ | `en0` |
+| **Mac 3** | Shitanshu | Backend A | `10.7.7.23` | `/19` (255.255.224.0) | `10:9f:41:c2:d9:37` | `en0` |
+| **Mac 4** | Shane | Backend B | `10.7.14.16` | `/19` (255.255.224.0) | `9e:f3:a4:24:4f:f7` | `en0` |
 
 ### Pairwise Connectivity Test
 Paste `ping -c 3 <ip>` outputs showing 0% packet loss between nodes.
