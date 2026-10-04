@@ -8,12 +8,12 @@ Each teammate can copy their respective prompt, paste it directly into their IDE
 
 ## Team Roster & Master Task Allocation
 
-| Node | Name | Role | Primary Assigned Tasks (from Brief) | Ports & Services |
-|---|---|---|---|---|
-| **Mac 1** | **Sarthak Mishra** (Lead) | DNS Server + Controller + Test Client | **Task A** (LAN Matrix), **Task B** (Private DNS `dnsmasq`), **Task E** (Client CA Trust), **Task F** (Caching Revalidation), **Task G** (Packet Capture & Protocol Inspection), **Report & Evidence** | `53/udp+tcp` |
-| **Mac 2** | **Preetish Ubhrani** | Nginx Edge + TLS Termination + Load Balancer | **Task A** (LAN IP), **Task D** (Reverse Proxy & Round-Robin Load Balancing), **Task E** (PKI Root CA Creation, Server Cert with SANs, TLS 1.3 on 8443) | `8443/tcp` |
-| **Mac 3** | **Shitanshu Tiwari** | Backend A Service | **Task A** (LAN IP), **Task C** (Backend A Python REST, `X-Backend: A`, `0.0.0.0:3001`), **Task D & F** (LB target & ETag caching) | `3001/tcp` |
-| **Mac 4** | **Shane** | Backend B Service + 2nd Client | **Task A** (LAN IP), **Task C** (Backend B Python REST, `X-Backend: B`, `0.0.0.0:3002`), **Task B** (2nd Client Scoped Resolver), **Task D & F** (LB target & ETag caching) | `3002/tcp` |
+| Node | Name | Role | Primary Assigned Tasks (from Brief) | Ports & Services | LAN IP Address |
+|---|---|---|---|---|---|
+| **Mac 1** | **Sarthak Mishra** (Lead) | DNS Server + Controller + Test Client | **Task A** (LAN Matrix), **Task B** (Private DNS `dnsmasq`), **Task E** (Client CA Trust), **Task F** (Caching Revalidation), **Task G** (Packet Capture & Protocol Inspection), **Report & Evidence** | `53/udp+tcp` | `10.7.7.126` |
+| **Mac 2** | **Preetish Ubhrani** | Nginx Edge + TLS Termination + Load Balancer | **Task A** (LAN IP), **Task D** (Reverse Proxy & Round-Robin Load Balancing), **Task E** (PKI Root CA Creation, Server Cert with SANs, TLS 1.3 on 8443) | `8443/tcp` | `10.7.11.189` |
+| **Mac 3** | **Shitanshu Tiwari** | Backend A Service | **Task A** (LAN IP), **Task C** (Backend A Python REST, `X-Backend: A`, `0.0.0.0:3001`), **Task D & F** (LB target & ETag caching) | `3001/tcp` | `10.7.7.23` |
+| **Mac 4** | **Shane** | Backend B Service + 2nd Client | **Task A** (LAN IP), **Task C** (Backend B Python REST, `X-Backend: B`, `0.0.0.0:3002`), **Task B** (2nd Client Scoped Resolver), **Task D & F** (LB target & ETag caching) | `3002/tcp` | `10.7.14.16` |
 
 ---
 
@@ -136,10 +136,10 @@ PLEASE EXECUTE THE FOLLOWING STEPS FOR ME:
    - Test cacheable endpoint: `curl -i http://127.0.0.1:3002/api/cacheable` and verify `Cache-Control: max-age=60` and `ETag`.
 
 6. Configure Second Client DNS (after Sarthak starts Mac 1):
-   - When Sarthak provides his DNS_IP and Preetish pushes pki/ca.crt:
+   - When Sarthak provides his DNS_IP (10.7.7.126) and Preetish pushes pki/ca.crt:
      - Run `git pull`
-     - Run `scripts/configure-client-dns.sh` (enter Sarthak's DNS IP when prompted).
-     - Test resolving the domain: `dig @<DNS_IP> app.team1.test +short`
+     - Run `scripts/configure-client-dns.sh` (enter Sarthak's DNS IP `10.7.7.126` when prompted).
+     - Test resolving the domain: `dig @10.7.7.126 app.team1.test +short`
      - Test HTTPS request without `-k`: `curl -v https://app.team1.test:8443/api/status`
 
 7. Prepare my Viva Answers:
@@ -187,16 +187,16 @@ PLEASE EXECUTE THE FOLLOWING STEPS FOR ME:
 
 3. Detect and display my LAN IP:
    - Run `./scripts/macos-network-info.sh`.
-   - Share my IP with Sarthak (Mac 1) so he points `app.team1.test` to my Mac.
+   - Share my IP (`10.7.11.189`) with Sarthak (Mac 1) so he points `app.team1.test` to my Mac.
 
 4. Run Edge Setup & CA Generation:
    - Run `./macs/mac2-preetish/setup.sh`.
    - When prompted:
      - Team name: team1
      - Network mode: lan
-     - Sarthak's (DNS server) LAN IP: <Enter Sarthak's IP>
-     - Shitanshu's (Backend A) LAN IP: <Enter Shitanshu's IP>
-     - Shane's (Backend B) LAN IP: <Enter Shane's IP>
+     - Sarthak's (DNS server) LAN IP: 10.7.7.126
+     - Shitanshu's (Backend A) LAN IP: 10.7.7.23
+     - Shane's (Backend B) LAN IP: 10.7.14.16
    - Setup will generate:
      - Root CA key & cert in `~/.config/cn-phase1/tls/ca.key` & `ca.crt`
      - Server key & cert in `~/.config/cn-phase1/tls/server.key` & `server.crt`
@@ -271,9 +271,9 @@ PLEASE EXECUTE THE FOLLOWING STEPS FOR ME:
    - When prompted:
      - Team name: team1
      - Network mode: lan
-     - Preetish's (edge) LAN IP: <Preetish IP>
-     - Shitanshu's (Backend A) LAN IP: <Shitanshu IP>
-     - Shane's (Backend B) LAN IP: <Shane IP>
+     - Preetish's (edge) LAN IP: 10.7.11.189
+     - Shitanshu's (Backend A) LAN IP: 10.7.7.23
+     - Shane's (Backend B) LAN IP: 10.7.14.16
    - When prompted for macOS sudo password, enter it to bind port 53 and create `/etc/resolver/team1.test`.
 
 4. Run Complete Verification Suite:

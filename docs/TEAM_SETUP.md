@@ -39,10 +39,17 @@ scripts/macos-network-info.sh
 ```
 
 Share your `NET_IP` with the team:
-- **`DNS_IP`** = Sarthak's IP
-- **`EDGE_IP`** = Preetish's IP
-- **`SHITANSHU_LAN_IP`** = Shitanshu's IP (Backend A)
-- **`SHANE_LAN_IP`** = Shane's IP (Backend B)
+- **`DNS_IP`** = `10.7.7.126` (Sarthak - Mac 1)
+- **`EDGE_IP`** = `10.7.11.189` (Preetish - Mac 2)
+- **`SHITANSHU_LAN_IP`** = `10.7.7.23` (Shitanshu - Mac 3, Port 3001)
+- **`SHANE_LAN_IP`** = `10.7.14.16` (Shane - Mac 4, Port 3002)
+
+| Node | Name | Role | IP Address | Port |
+|---|---|---|---|---|
+| **Mac 1** | **Sarthak Mishra** | DNS + Controller + Test Client | `10.7.7.126` | `53` |
+| **Mac 2** | **Preetish Ubhrani** | Nginx Edge + TLS + LB | `10.7.11.189` | `8443` |
+| **Mac 3** | **Shitanshu Tiwari** | Backend A | `10.7.7.23` | `3001` |
+| **Mac 4** | **Shane** | Backend B + 2nd Client | `10.7.14.16` | `3002` |
 
 Verify pairwise connectivity:
 ```bash
