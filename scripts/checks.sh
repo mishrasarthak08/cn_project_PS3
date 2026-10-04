@@ -30,8 +30,8 @@ detect_trust() {
   fi
 }
 
-chk_dns_server()  { [ "$(resolve_via_dig)" = "$EDGE_IP" ]; }
-chk_dns_client()  { [ "$(client_resolved_ip)" = "$EDGE_IP" ]; }
+chk_dns_server()  { [ -n "${EDGE_IP:-}" ] && [ "$(resolve_via_dig)" = "$EDGE_IP" ]; }
+chk_dns_client()  { [ -n "${EDGE_IP:-}" ] && [ "$(client_resolved_ip)" = "$EDGE_IP" ]; }
 chk_edge_tcp()    { port_open "$EDGE_IP" "$EDGE_PORT" 3; }
 chk_tls()         { app_curl -o /dev/null "$APP_URL/__edge/health"; }
 chk_edge_http()   { [ "$(app_curl "$APP_URL/__edge/health" 2>/dev/null)" = "edge ok" ]; }
