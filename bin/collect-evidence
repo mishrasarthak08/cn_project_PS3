@@ -14,8 +14,8 @@ cacert=(); [ "$CN_TRUST_MODE" = cacert ] && cacert=(--cacert "$CN_CA_CERT_REPO")
 { date; echo "mode=$NETWORK_MODE role=${ROLE:-?} team=$TEAM"; "$REPO/scripts/macos-network-info.sh"; echo; ifconfig "$iface"; echo; route -n get default; } > "$D/network-info.txt" 2>&1
 { scutil --dns | grep -B2 -A6 "$TEST_ZONE" || echo "no scoped resolver for $TEST_ZONE"; echo; cat "/etc/resolver/$TEST_ZONE" 2>&1; } > "$D/resolver.txt"
 { for h in "$APP_DOMAIN" "$API_DOMAIN"; do "$DIG" -p "$DNS_PORT" "@$DNS_IP" "$h"; echo; nslookup -port="$DNS_PORT" "$h" "$DNS_IP"; echo; done; } > "$D/dns.txt" 2>&1
-"$CURL" -v "${resolve[@]}" "${cacert[@]}" --max-time 10 "$APP_URL/api/status" > "$D/curl-verbose.txt" 2>&1
-"$CURL" -sS -I "${resolve[@]}" "${cacert[@]}" --max-time 10 "$APP_URL/api/cacheable" > "$D/headers.txt" 2>&1
+"$CURL" -v ${resolve[@]+"${resolve[@]}"} ${cacert[@]+"${cacert[@]}"} --max-time 10 "$APP_URL/api/status" > "$D/curl-verbose.txt" 2>&1
+"$CURL" -sS -I ${resolve[@]+"${resolve[@]}"} ${cacert[@]+"${cacert[@]}"} --max-time 10 "$APP_URL/api/cacheable" > "$D/headers.txt" 2>&1
 { printf '' | openssl s_client -connect "$EDGE_IP:$EDGE_PORT" -servername "$APP_DOMAIN" -CAfile "$CN_CA_CERT_REPO" -showcerts 2>&1 | sed -n '1,200p'
   echo; openssl x509 -in "$CN_CA_CERT_REPO" -noout -subject -issuer -dates 2>&1; } > "$D/tls.txt"
 { echo "Sequence of X-Backend values: $(sample_backends 10)"; } > "$D/load-balancing.txt"
