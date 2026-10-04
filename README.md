@@ -97,7 +97,8 @@ Never commit tokens, credentials JSON, `.env`, or any private key (`.gitignore` 
 
 ## Docs
 
-[AI AGENT PROMPTS](docs/AI_AGENT_PROMPTS.md) - [TEAM SETUP GUIDE](docs/TEAM_SETUP.md) - [ARCHITECTURE](docs/ARCHITECTURE.md) - [REQUEST_FLOW](docs/REQUEST_FLOW.md) - [PHASE1](docs/PHASE1.md) (task-by-task checklist) - [LAN_MODE](docs/LAN_MODE.md) - [CLOUDFLARE_MODE](docs/CLOUDFLARE_MODE.md) - [FAILURE_DEMOS](docs/FAILURE_DEMOS.md) - [REPORT_TEMPLATE](docs/REPORT_TEMPLATE.md) - [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) - [VIVA](docs/VIVA.md)
+[AI AGENT PROMPTS](docs/AI_AGENT_PROMPTS.md) - [TEAM SETUP GUIDE](docs/TEAM_SETUP.md) - [VIDEO SCRIPT (SHITANSHU)](docs/SHITANSHU_VIDEO_SCRIPT.md) - [FORM & EVALUATION GUIDE (PREETISH)](docs/PREETISH_FORM_AND_SYSTEM_GUIDE.md) - [REPORT_TEMPLATE](docs/REPORT_TEMPLATE.md) - [ARCHITECTURE](docs/ARCHITECTURE.md) - [REQUEST_FLOW](docs/REQUEST_FLOW.md) - [PHASE1](docs/PHASE1.md) (task-by-task checklist) - [LAN_MODE](docs/LAN_MODE.md) - [CLOUDFLARE_MODE](docs/CLOUDFLARE_MODE.md) - [FAILURE_DEMOS](docs/FAILURE_DEMOS.md) - [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) - [VIVA](docs/VIVA.md)
+
 
 ---
 *Forked and configured for Sarthak Mishra (`mishrasarthak08`), Preetish Ubhrani (`ubhranipreetish`), Shitanshu Tiwari, and Shane.*
