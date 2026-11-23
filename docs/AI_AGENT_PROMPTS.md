@@ -1,5 +1,7 @@
 # Teammate AI Agent Runbook & Prompt Handbook
 
+> 🚀 **PHASE 2 IS LIVE:** For Phase 2 (*Harden, Recover & Troubleshoot*) AI prompts, step-by-step tasks, and viva answers, see the **[PHASE 2 TEAM GUIDE](PHASE2_TEAM_GUIDE.md)**!
+
 This document provides **ready-to-use, complete AI prompts** for each team member. 
 
 Each teammate can copy their respective prompt, paste it directly into their IDE AI assistant (such as **Antigravity**, **Cursor**, **Claude Dev / Cline**, **Copilot**, or **Gemini Code Assist**), and their AI will autonomously execute and verify their entire part of the project.
@@ -312,6 +314,7 @@ PLEASE EXECUTE THE FOLLOWING STEPS FOR ME:
 
 ## Where to Find Everything in the Repository
 
+- **Phase 2 Complete Runbook & AI Prompts:** [`docs/PHASE2_TEAM_GUIDE.md`](PHASE2_TEAM_GUIDE.md)
 - **Step-by-step Team Runbook:** [`docs/TEAM_SETUP.md`](file:///Users/SarMish/Downloads/cn_project-main%202/docs/TEAM_SETUP.md)
 - **Detailed Task Checklist (Tasks A-G):** [`docs/PHASE1.md`](file:///Users/SarMish/Downloads/cn_project-main%202/docs/PHASE1.md)
 - **Report Template for Submission:** [`docs/REPORT_TEMPLATE.md`](file:///Users/SarMish/Downloads/cn_project-main%202/docs/REPORT_TEMPLATE.md)

@@ -59,10 +59,16 @@ dns_running() {
 
 # Scoped resolver: only *.<team>.test goes to our server; the rest of the
 # system DNS configuration is left untouched (no System Settings edits needed).
-resolver_install() {  # resolver_install <nameserver-ip>
-  local ns="$1" f="$RESOLVER_FILE_DIR/$TEST_ZONE" tmp
+resolver_install() {  # resolver_install <nameserver-ip> [backup-ip...]
+  local f="$RESOLVER_FILE_DIR/$TEST_ZONE" tmp
   tmp="$(mktemp)"
-  { echo "# managed by cn-phase1 (remove: bin/teardown)"; echo "nameserver $ns"; [ "$DNS_PORT" != 53 ] && echo "port $DNS_PORT"; } > "$tmp"
+  {
+    echo "# managed by cn-phase1 (remove: bin/teardown)"
+    for ns in "$@"; do
+      echo "nameserver $ns"
+    done
+    [ "${DNS_PORT:-53}" != 53 ] && echo "port $DNS_PORT"
+  } > "$tmp"
   sudo_run mkdir -p "$RESOLVER_FILE_DIR"
   if [ -f "$f" ] && ! grep -q "managed by cn-phase1" "$f"; then
     sudo_run cp -p "$f" "$CN_BACKUP_DIR/resolver.$TEST_ZONE.orig"
@@ -71,7 +77,7 @@ resolver_install() {  # resolver_install <nameserver-ip>
   fi
   sudo_run cp "$tmp" "$f"; sudo_run chmod 644 "$f"; rm -f "$tmp"
   flush_dns_cache
-  ok "Resolver for .${TEST_ZONE} -> $ns  ($f)"
+  ok "Resolver for .${TEST_ZONE} -> $*  ($f)"
 }
 
 resolver_remove() {
