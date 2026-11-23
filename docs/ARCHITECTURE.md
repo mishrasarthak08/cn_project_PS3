@@ -1,13 +1,13 @@
 # Architecture
 
-## Roles and address inventory (fill in during Task A)
+## Roles and address inventory (Phase 1 & Phase 2 Verified)
 
-| Mac | Person | Role | IP (LAN) | Interface | MAC | Service / port |
+| Mac | Person | Role | IP (LAN) | Interface | MAC Address | Service / port |
 |---|---|---|---|---|---|---|
-| 1 | Sarthak | DNS + client + controller | _fill_ | _en0_ | _fill_ | dnsmasq 53/udp,tcp |
-| 2 | Preetish | nginx edge | _fill_ | _en0_ | _fill_ | 8443/tcp (TLS) |
-| 3 | Shitanshu | Backend A | _fill_ | _en0_ | _fill_ | 3001/tcp |
-| 4 | Shane | Backend B | _fill_ | _en0_ | _fill_ | 3002/tcp |
+| **Mac 1** | **Sarthak Mishra** (Lead) | Primary DNS + Client + Controller | `10.7.0.226` | `en0` | `92:82:a9:6f:7c:8f` | `dnsmasq` 53/udp,tcp (TTL: 30s) |
+| **Mac 2** | **Preetish Ubhrani** | Nginx Edge (TLS + Proxy + LB) | `10.7.16.162` | `en0` | `2e:3e:87:1c:cc:ab` | `nginx` 8443/tcp (TLS 1.3 Termination) |
+| **Mac 3** | **Shitanshu Tiwari** | Backend A + Service Isolation | `10.7.2.192` | `en0` | `10:9f:41:c2:d9:37` | Python REST 3001/tcp + PF Firewall |
+| **Mac 4** | **Shane** | Backend B + Backup DNS Resolver | `10.7.6.77` | `en0` | `9e:f3:a4:24:4f:f7` | Python REST 3002/tcp + `dnsmasq` 53/udp |
 
 Each Mac prints its row with `scripts/macos-network-info.sh`. Tunnel mode adds virtual IPs 10.250.0.3 (A) and 10.250.0.4 (B).
 
@@ -39,5 +39,13 @@ Each Mac prints its row with `scripts/macos-network-info.sh`. Tunnel mode adds v
 * **Health probes** - nginx exposes `/__probe/a`, `/__probe/b`, `/__edge/health` so a client that cannot reach the backends directly (tunnel mode) can still prove each layer individually.
 * **Failover** - `max_fails=1 fail_timeout=5s`, `proxy_next_upstream error timeout http_502/503/504`, connect timeout 2s. If both fail, nginx returns a clear `502`.
 
-## Single points of failure
-The edge (Mac 2) and DNS (Mac 1) are single points of failure in Phase 1. Phase 2 addresses these (backup resolver, standby edge with DNS cutover).
+## Single Points of Failure & Resilience (Phase 2 Hardening)
+
+* **DNS Layer (Resolved):** In Phase 1, Mac 1 was a Single Point of Failure. In Phase 2, this was eliminated by introducing a secondary `dnsmasq` resolver on Mac 4 (`10.7.6.77`). Client Macs configure dual resolvers in `/etc/resolver/team1.test`, allowing seamless fallback if Mac 1 goes down.
+* **Backend Tier (Resolved):** If Backend A or B crashes, Nginx passive health checks (`proxy_next_upstream`, `max_fails=1`, `fail_timeout=5s`, `proxy_connect_timeout 2s`) immediately route 100% of traffic to the healthy instance with zero 502 errors and automatically self-heal upon recovery.
+* **Service Isolation (Hardened):** Backends are isolated behind macOS `pf` packet filter rules (anchor `com.apple/cn_backend_isolation`), rejecting direct LAN client access with TCP RST (`block return`) while permitting reverse proxy traffic.
+* **Edge Proxy SPOF (Production Solution):** In our local testbed, Mac 2 remains the active edge proxy. In enterprise production systems, this SPOF is resolved via:
+  1. **VRRP / Keepalived:** Active-Passive edge pairing with a shared Floating VIP.
+  2. **BGP Anycast:** Multiple edge nodes announcing the same IP; routers send traffic to the nearest healthy instance.
+  3. **Cloud Managed ALB:** Multi-AZ AWS Application Load Balancers with redundant edge endpoints.
+  4. **DNS Failover (Extension E):** Standby edge node with automated DNS health-check cutover.
