@@ -1,11 +1,16 @@
 # Computer Networks Project — Phase 2 Final Implementation Report
 ## Private Network Service Platform: Harden, Recover & Troubleshoot
 
+> **📄 Official PDF Document:** [Download / View Phase 2 Final Report PDF](Phase2_Final_Report_Team1.pdf)  
+> **🔍 Live Execution Evidence & Logs:** [View Phase 2 Drill Proofs](../evidence/phase2_results.md)  
+> **📦 Raw Packet Capture:** [View DNS Wireshark Capture (.pcap)](../evidence/dns-traffic.pcap)
+
 **Course:** Computer Networks (Laboratory Project)  
 **Phase:** Phase 2 — Resilience, Service Isolation, DNS Failover & Controlled Failure Diagnosis  
 **Evaluation:** Review 2 (50 Marks)  
 **Date of Submission / Review:** November 2026  
 **Repository:** `https://github.com/mishrasarthak08/cn_project_PS3.git`  
+
 
 ---
 
