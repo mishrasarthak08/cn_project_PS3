@@ -31,10 +31,10 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
 
 | Node | Teammate | Primary Role | Phase 2 Ownership | Services & Ports | LAN IP Address |
 |---|---|---|---|---|---|
-| **Mac 1** | **Sarthak Mishra** (Lead) | Primary DNS + Controller + Test Client | **Ext B** (DNS TTL Cutover), **Ext E** (DNS Record Edge Cutover), **Ext F** (Triage Coordinator), **Live Demo Conductor** | `dnsmasq` (`53/udp+tcp`), Controller CLI | `10.7.7.126` |
-| **Mac 2** | **Preetish Ubhrani** | Edge Reverse Proxy & Load Balancer | **Ext D** (HA Passive Failover Tuning & Self-Healing), **Ext C** (Edge Firewall Access Verification), Standby TLS Cert Sharing | `nginx` (`8443/tcp`), TLS 1.3 | `10.7.11.189` |
+| **Mac 1** | **Sarthak Mishra** (Lead) | Primary DNS + Controller + Test Client | **Ext B** (DNS TTL Cutover), **Ext E** (DNS Record Edge Cutover), **Ext F** (Triage Coordinator), **Live Demo Conductor** | `dnsmasq` (`53/udp+tcp`), Controller CLI | `10.7.0.226` |
+| **Mac 2** | **Preetish Ubhrani** | Edge Reverse Proxy & Load Balancer | **Ext D** (HA Passive Failover Tuning & Self-Healing), **Ext C** (Edge Firewall Access Verification), Standby TLS Cert Sharing | `nginx` (`8443/tcp`), TLS 1.3 | `10.7.16.162` |
 | **Mac 3** | **Shitanshu Tiwari** | Backend A Service | **Ext C** (macOS `pf` Firewall Isolation on port 3001), **Ext E** (Standby Nginx Edge Host), **Ext D** (Failover Target A) | Python REST (`3001/tcp`), Standby Nginx (`8443`) | `10.7.7.23` |
-| **Mac 4** | **Shane** | Backend B Service + 2nd Client | **Ext A** (Backup DNS Server on port 53), **Ext C** (macOS `pf` Firewall Isolation on port 3002), **Ext A** (Client Dual-Resolver Verification) | Python REST (`3002/tcp`), Backup `dnsmasq` (`53`) | `10.7.14.16` |
+| **Mac 4** | **Shane** | Backend B Service + 2nd Client | **Ext A** (Backup DNS Server on port 53), **Ext C** (macOS `pf` Firewall Isolation on port 3002), **Ext A** (Client Dual-Resolver Verification) | Python REST (`3002/tcp`), Backup `dnsmasq` (`53`) | `10.7.6.77` |
 
 ---
 
@@ -61,29 +61,29 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    *Verification:*
    ```bash
    dig +short -p 53 @127.0.0.1 app.team1.test
-   # Expected output: 10.7.11.189 (Preetish's Edge IP)
+   # Expected output: 10.7.16.162 (Preetish's Edge IP)
    ```
 
 2. **Configure Client Macs with Dual Resolvers:**
    Both Sarthak (Mac 1) and Shane (Mac 4) configure `/etc/resolver/team1.test` to list **both** Primary and Backup nameservers:
    ```bash
    # On Mac 1, Mac 2, or Mac 4:
-   ./scripts/setup-backup-dns.sh configure-client 10.7.7.126 10.7.14.16
+   ./scripts/setup-backup-dns.sh configure-client 10.7.0.226 10.7.6.77
    ```
    *Inspect the resolver configuration:*
    ```bash
    cat /etc/resolver/team1.test
    # Expected output:
    # # managed by cn-phase2 backup dns
-   # nameserver 10.7.7.126
-   # nameserver 10.7.14.16
+   # nameserver 10.7.0.226
+   # nameserver 10.7.6.77
    ```
 
 3. **Demonstrate DNS Failover (The Proof):**
    - **Step 3.1:** Verify resolution works through Primary:
      ```bash
      dig app.team1.test
-     # In output: SERVER: 10.7.7.126#53
+     # In output: SERVER: 10.7.0.226#53
      ```
    - **Step 3.2:** Stop the Primary DNS service on Mac 1:
      ```bash
@@ -95,7 +95,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
      # Shane or Sarthak runs:
      dig app.team1.test
      # Result: Resolves successfully!
-     # In output: SERVER: 10.7.14.16#53 (Fell back to Shane's Backup DNS!)
+     # In output: SERVER: 10.7.6.77#53 (Fell back to Shane's Backup DNS!)
      curl -i https://app.team1.test:8443/api/status
      # Returns HTTP 200 OK!
      ```
@@ -131,7 +131,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    ```
    *Observe:* In the ANSWER section:
    ```
-   app.team1.test.    30    IN    A    10.7.11.189
+   app.team1.test.    30    IN    A    10.7.16.162
    ```
    Repeated `dig` commands show the TTL decrementing: `28`, `25`, `20`...
 
@@ -146,7 +146,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    ```bash
    dscacheutil -q host -a name app.team1.test
    ```
-   *Observation:* The client **still receives the old IP (`10.7.11.189`)** because the OS DNS cache hasn't expired yet!
+   *Observation:* The client **still receives the old IP (`10.7.16.162`)** because the OS DNS cache hasn't expired yet!
 
 5. **Step 4 — Observe Expiration & Manual Flush:**
    - Wait 30 seconds: query returns the new IP (`192.0.2.99`).
@@ -178,12 +178,12 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    - **On Mac 3 (Shitanshu):**
      ```bash
      git pull origin main
-     ./scripts/backend-firewall.sh enable 10.7.11.189 3001
+     ./scripts/backend-firewall.sh enable 10.7.16.162 3001
      ```
    - **On Mac 4 (Shane):**
      ```bash
      git pull origin main
-     ./scripts/backend-firewall.sh enable 10.7.11.189 3002
+     ./scripts/backend-firewall.sh enable 10.7.16.162 3002
      ```
 
 2. **Step 2 — Verify Legitimate Access (From Preetish's Edge Mac 2):**
@@ -192,7 +192,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    # Edge -> Backend A
    curl -I http://10.7.7.23:3001/api/status
    # Edge -> Backend B
-   curl -I http://10.7.14.16:3002/api/status
+   curl -I http://10.7.6.77:3002/api/status
    ```
    *Result:* **HTTP 200 OK!** (Traffic from the Edge IP is explicitly permitted).
 
@@ -200,7 +200,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
    Sarthak tries to bypass the proxy and hit the backends directly:
    ```bash
    nc -vz -G 2 10.7.7.23 3001
-   nc -vz -G 2 10.7.14.16 3002
+   nc -vz -G 2 10.7.6.77 3002
    ```
    *Result:* **Connection refused / Timed out!** (Packet filter immediately rejects direct client requests).
 
@@ -228,7 +228,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
     ```nginx
     upstream project_backends {
         server 10.7.7.23:3001 max_fails=1 fail_timeout=5s;
-        server 10.7.14.16:3002 max_fails=1 fail_timeout=5s;
+        server 10.7.6.77:3002 max_fails=1 fail_timeout=5s;
     }
     proxy_connect_timeout 2s;
     proxy_next_upstream error timeout http_502 http_503 http_504;
@@ -329,7 +329,7 @@ In **Phase 2**, our objective is to **harden the network, demonstrate automated 
 
 ```
 [Layer 3 - Network IP]      --> ping <target_ip>
-[Layer 7 - DNS Resolution]  --> dig @10.7.7.126 app.team1.test
+[Layer 7 - DNS Resolution]  --> dig @10.7.0.226 app.team1.test
 [Layer 4 - Transport TCP]   --> nc -vz <edge_ip> 8443
 [Layer 5/6 - TLS Handshake] --> openssl s_client -connect <edge_ip>:8443 -servername app.team1.test
 [Layer 7 - Edge Nginx HTTP] --> curl -i http://localhost:8443/__edge/health
@@ -368,10 +368,10 @@ During evaluation, follow this exact sequence without skipping:
    - *Action:* Display Network Architecture Diagram (`docs/diagrams.md`), table of 4 Macs, roles, and LAN IPs.
 2. **Step 2 — Confirm LAN Connectivity:**
    - *Speaker:* **Sarthak**
-   - *Action:* Run pairwise ping script: `ping -c 1 10.7.11.189` (all ping matrix green).
+   - *Action:* Run pairwise ping script: `ping -c 1 10.7.16.162` (all ping matrix green).
 3. **Step 3 — Resolve Private Domain:**
    - *Speaker:* **Shane**
-   - *Action:* On Mac 4: `dig app.team1.test` $\rightarrow$ shows resolved IP `10.7.11.189`.
+   - *Action:* On Mac 4: `dig app.team1.test` $\rightarrow$ shows resolved IP `10.7.16.162`.
 4. **Step 4 — Open Service over HTTPS:**
    - *Speaker:* **Preetish**
    - *Action:* Open `https://app.team1.test:8443/` in Safari/Chrome. Show green padlock, zero warnings, valid local CA certificate.
@@ -432,7 +432,7 @@ INSTRUCTIONS:
 4. Run `./macs/mac2-preetish/status.sh` to confirm healthy operation.
 5. Test connectivity to backends:
    `curl -I http://10.7.7.23:3001/api/status`
-   `curl -I http://10.7.14.16:3002/api/status`
+   `curl -I http://10.7.6.77:3002/api/status`
 6. Run continuous curls during the failover drill to verify zero dropped requests.
 ```
 
@@ -449,7 +449,7 @@ MY ROLE:
 - Service: Backend A (Python REST, port 3001/TCP)
 - Phase 2 Tasks:
   1. Task C: Run Backend A on port 3001.
-  2. Extension C: Enable macOS pf firewall to isolate port 3001 so ONLY Preetish (10.7.11.189) and localhost can connect.
+  2. Extension C: Enable macOS pf firewall to isolate port 3001 so ONLY Preetish (10.7.16.162) and localhost can connect.
   3. Extension D: Participate in backend failover drill (stopping and restarting Backend A).
   4. Extension E: Host standby Nginx edge if required.
 
@@ -458,7 +458,7 @@ INSTRUCTIONS:
 2. Start Backend A: `./macs/mac3-shitanshu/start.sh`.
 3. Check status: `./macs/mac3-shitanshu/status.sh`.
 4. Test enabling the PF firewall isolation:
-   `./scripts/backend-firewall.sh enable 10.7.11.189 3001`
+   `./scripts/backend-firewall.sh enable 10.7.16.162 3001`
 5. Verify firewall rules with `./scripts/backend-firewall.sh status`.
 6. When testing is complete or before git commits, test rollback:
    `./scripts/backend-firewall.sh disable`
@@ -477,7 +477,7 @@ MY ROLE:
 - Service: Backend B (port 3002/TCP) + Backup DNS Resolver (port 53/UDP) + Secondary Client
 - Phase 2 Tasks:
   1. Task C: Run Backend B on port 3002.
-  2. Extension A: Launch secondary dnsmasq resolver with identical records pointing to Preetish (10.7.11.189).
+  2. Extension A: Launch secondary dnsmasq resolver with identical records pointing to Preetish (10.7.16.162).
   3. Extension A: Configure client dual-resolver in /etc/resolver/team1.test.
   4. Extension C: Enable macOS pf firewall isolation on port 3002 for Preetish's IP.
 
@@ -489,9 +489,9 @@ INSTRUCTIONS:
 4. Verify backup resolver answers queries:
    `dig +short -p 53 @127.0.0.1 app.team1.test`
 5. Configure dual DNS on Mac 4:
-   `./scripts/setup-backup-dns.sh configure-client 10.7.7.126 10.7.14.16`
+   `./scripts/setup-backup-dns.sh configure-client 10.7.0.226 10.7.6.77`
 6. Test isolation firewall on port 3002:
-   `./scripts/backend-firewall.sh enable 10.7.11.189 3002`
+   `./scripts/backend-firewall.sh enable 10.7.16.162 3002`
 ```
 
 ---
@@ -526,7 +526,7 @@ INSTRUCTIONS:
 
 Before the Review 2 evaluation slot, collect and commit the following evidence into `evidence/phase2/`:
 
-- [ ] **Extension A:** Screenshot of `dig app.team1.test` resolving through Shane's IP (`10.7.14.16#53`) while Mac 1's dnsmasq is stopped.
+- [ ] **Extension A:** Screenshot of `dig app.team1.test` resolving through Shane's IP (`10.7.6.77#53`) while Mac 1's dnsmasq is stopped.
 - [ ] **Extension B:** Terminal log showing `dig` TTL counting down (`30`, `25`, `20`...) and `dscacheutil -flushcache` forcing immediate IP cutover.
 - [ ] **Extension C:** Terminal comparison:
   - From Mac 2 (Edge): `curl http://...:3001/api/status` $\rightarrow$ `200 OK`.
